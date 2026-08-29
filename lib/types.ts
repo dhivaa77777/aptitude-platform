@@ -1,0 +1,1 @@
+export type Role = "LEARNER" | "ADMIN" | "MASTER_ADMIN";
