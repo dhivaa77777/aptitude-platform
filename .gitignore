@@ -14,3 +14,6 @@ out/
 *.pem
 npm-debug.log*
 .yarn/
+# logs
+*.log
+
