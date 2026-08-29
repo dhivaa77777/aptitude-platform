@@ -1,0 +1,9 @@
+
+> aptitude-platform@0.1.0 start
+> next start
+
+▲ Next.js 16.3.3
+- Local:         http://localhost:3000
+- Network:       http://10.159.7.228:3000
+✓ Ready in 157ms
+✓ Running next.config.ts took 33ms
