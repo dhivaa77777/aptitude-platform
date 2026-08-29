@@ -155,7 +155,7 @@ create table public.admin_audit_log (
 -- ============================================================================
 create or replace function public.set_updated_at()
 returns trigger
-language plpgsql
+language plpgsql set search_path = public
 as $$
 begin
   new.updated_at = now();
@@ -178,6 +178,10 @@ as $$
   select role from public.users where id = auth.uid()
 $$;
 
+-- Policy-backed helper: only signed-in roles may call it directly.
+revoke execute on function public.current_user_role() from public, anon;
+grant execute on function public.current_user_role() to authenticated;
+
 -- Auto-provision a profile row whenever Supabase Auth creates a user.
 create or replace function public.handle_new_user()
 returns trigger
@@ -199,6 +203,9 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function public.handle_new_user();
 
+-- Invoked only by the auth.users trigger; not exposed to API roles.
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+
 -- ============================================================================
 -- Row-Level Security
 -- ============================================================================
@@ -219,8 +226,8 @@ alter table public.admin_audit_log enable row level security;
 create policy users_select_own on public.users for select using (id = auth.uid());
 create policy users_insert_self on public.users for insert with check (id = auth.uid());
 create policy users_update_own on public.users for update using (id = auth.uid()) with check (id = auth.uid());
-create policy users_select_admin on public.users for select using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
-create policy users_update_admin on public.users for update using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (true);
+create policy users_select_admin on public.users for select to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
+create policy users_update_admin on public.users for update to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (true);
 
 -- user_preferences
 create policy prefs_select_own on public.user_preferences for select using (user_id = auth.uid());
@@ -230,16 +237,16 @@ create policy prefs_update_own on public.user_preferences for update using (user
 -- Shared content: readable by any role (guests included), written by admin roles only.
 create policy content_select_authenticated on public.question_groups for select to authenticated using (true);
 create policy content_select_anon on public.question_groups for select to anon using (true);
-create policy content_admin_write on public.question_groups for all using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
+create policy content_admin_write on public.question_groups for all to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
 create policy content_select_authenticated on public.questions for select to authenticated using (true);
 create policy content_select_anon on public.questions for select to anon using (true);
-create policy content_admin_write on public.questions for all using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
+create policy content_admin_write on public.questions for all to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
 create policy content_select_authenticated on public.options for select to authenticated using (true);
 create policy content_select_anon on public.options for select to anon using (true);
-create policy content_admin_write on public.options for all using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
+create policy content_admin_write on public.options for all to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
 create policy content_select_authenticated on public.question_tags for select to authenticated using (true);
 create policy content_select_anon on public.question_tags for select to anon using (true);
-create policy content_admin_write on public.question_tags for all using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
+create policy content_admin_write on public.question_tags for all to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN')) with check (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
 
 -- user_question_history
 create policy uqh_select_own on public.user_question_history for select using (user_id = auth.uid());
@@ -250,7 +257,7 @@ create policy uqh_update_own on public.user_question_history for update using (u
 create policy attempts_select_own on public.test_attempts for select using (user_id = auth.uid());
 create policy attempts_insert_own on public.test_attempts for insert with check (user_id = auth.uid() or (user_id is null and guest_session_id is not null));
 create policy attempts_update_own on public.test_attempts for update using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy attempts_select_admin on public.test_attempts for select using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
+create policy attempts_select_admin on public.test_attempts for select to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
 
 -- attempt_questions
 create policy aq_select_own on public.attempt_questions for select using (exists (
@@ -259,21 +266,21 @@ create policy aq_select_own on public.attempt_questions for select using (exists
 create policy aq_insert_own on public.attempt_questions for insert with check (exists (
   select 1 from public.test_attempts t where t.id = attempt_id and t.user_id = auth.uid()
 ));
-create policy aq_select_admin on public.attempt_questions for select using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
+create policy aq_select_admin on public.attempt_questions for select to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
 
 -- user_topic_stats
 create policy stats_select_own on public.user_topic_stats for select using (user_id = auth.uid());
 create policy stats_insert_own on public.user_topic_stats for insert with check (user_id = auth.uid());
 create policy stats_update_own on public.user_topic_stats for update using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy stats_select_admin on public.user_topic_stats for select using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
+create policy stats_select_admin on public.user_topic_stats for select to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
 
 -- recommendations
 create policy recs_select_own on public.recommendations for select using (user_id = auth.uid());
 create policy recs_insert_own on public.recommendations for insert with check (user_id = auth.uid());
-create policy recs_select_admin on public.recommendations for select using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
+create policy recs_select_admin on public.recommendations for select to authenticated using (public.current_user_role() in ('ADMIN', 'MASTER_ADMIN'));
 
 -- admin_audit_log: MASTER_ADMIN only; service role writes via server code.
-create policy audit_master_admin on public.admin_audit_log for all using (public.current_user_role() = 'MASTER_ADMIN') with check (public.current_user_role() = 'MASTER_ADMIN');
+create policy audit_master_admin on public.admin_audit_log for all to authenticated using (public.current_user_role() = 'MASTER_ADMIN') with check (public.current_user_role() = 'MASTER_ADMIN');
 
 -- ============================================================================
 -- Privileges
