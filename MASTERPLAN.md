@@ -43,12 +43,13 @@ All three authenticate through one login screen; the server determines routing b
 ## 4. Database Schema (authoritative — do not deviate without updating this file)
 
 ```sql
--- users
-id, name, username (unique), email (unique), password_hash, role (LEARNER|ADMIN|MASTER_ADMIN),
-status (ACTIVE|SUSPENDED), mfa_enabled, created_at
+-- users  (profile table; id = Supabase Auth auth.users.id, FK on delete cascade.
+--         Auth owns credentials — no password_hash is stored by the app.)
+id, name, username (unique), email (unique), role (LEARNER|ADMIN|MASTER_ADMIN),
+status (ACTIVE|SUSPENDED), mfa_enabled, created_at, updated_at
 
 -- user_preferences
-user_id (FK), preparation_fields (array or join), settings_json
+user_id (FK, PK), preparation_fields (text[] with check 1..2), settings_json
 
 -- question_groups
 id, group_type (DI_TABLE|DI_CHART|RC_PASSAGE|CASELET), content, created_at
@@ -92,7 +93,25 @@ id, user_id (FK), topic, reason, recommended_action_json, generated_at
 id, admin_id (FK), action, target_type, target_id, timestamp
 ```
 
-**Row-Level Security policies required on:** `test_attempts`, `attempt_questions`, `user_topic_stats`, `recommendations` — restrict to `user_id = auth.uid()` with a separate policy granting ADMIN/MASTER_ADMIN broader read access.
+**Row-Level Security enabled on every table.** Policies required on:
+`test_attempts`, `attempt_questions`, `user_topic_stats`, `recommendations` —
+restrict to `user_id = auth.uid()` with a separate policy granting
+ADMIN/MASTER_ADMIN broader read access. Shared content
+(`question_groups`, `questions`, `options`, `question_tags`) is readable by any
+role (authenticated and anon/guest), written only by ADMIN/MASTER_ADMIN. Admin
+writes go through the server (service role); audit log is MASTER_ADMIN-only at
+the DB layer.
+
+**Implementation notes (approved in Phase 2, migration `20260829184225_init_schema.sql`):**
+- Controlled states are Postgres enums: `role`, `user_status`, `tag_type`,
+  `question_type` (`MCQ`, `MULTI`), `group_type`, `attempt_mode`,
+  `attempt_status`, `question_status`.
+- `users.password_hash` is dropped — Supabase Auth owns credentials;
+  `public.users.id` is `auth.uid()` with FK to `auth.users(id)`, and a trigger
+  on `auth.users` auto-provisions the profile row.
+- `user_preferences.preparation_fields` is `text[]` with a `1..2` count check.
+- `attempt_questions.correct_option_id_snapshot` snapshots the option id at
+  attempt time (no FK dependency that could be invalidated later).
 
 ---
 
