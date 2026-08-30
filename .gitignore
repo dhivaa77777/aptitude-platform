@@ -16,4 +16,5 @@ npm-debug.log*
 .yarn/
 # logs
 *.log
+*.tsbuildinfo
 

@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader } from "@/components/ui/card";
 
@@ -17,7 +16,7 @@ const recommendations = [
 
 export default function ResultsPage() {
   return (
-    <AppShell role="LEARNER">
+    <>
       <h1 className="text-2xl font-semibold tracking-tight">Results</h1>
       <p className="mt-1 text-sm text-muted">
         Deterministic scoring with a topic-level breakdown.
@@ -91,6 +90,6 @@ export default function ResultsPage() {
           </ul>
         </Card>
       </section>
-    </AppShell>
+    </>
   );
 }

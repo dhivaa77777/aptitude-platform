@@ -28,11 +28,6 @@ export default function SplashPage() {
               Get started
             </Button>
           </Link>
-          <Link href="/home" className="w-full sm:w-auto">
-            <Button variant="secondary" size="lg" className="w-full">
-              Continue as guest
-            </Button>
-          </Link>
         </div>
         <ul className="mt-12 grid w-full max-w-xl gap-3 sm:grid-cols-3">
           {features.map((f) => (
