@@ -477,6 +477,14 @@ export type Database = {
       }
       is_email_taken: { Args: { email: string }; Returns: boolean }
       is_username_taken: { Args: { username: string }; Returns: boolean }
+      log_admin_action: {
+        Args: {
+          p_action: string
+          p_target_id: string | null
+          p_target_type: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       attempt_mode: "PRACTICE" | "TEST"

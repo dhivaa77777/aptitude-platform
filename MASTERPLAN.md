@@ -117,6 +117,11 @@ the DB layer.
   granted to anon + authenticated) expose RLS-safe existence checks so the
   client can validate username/email availability before creating an account
   (Phase 3).
+- `log_admin_action(text, text, uuid)` (security definer, `search_path`
+  pinned, `EXECUTE` granted to authenticated only) is the sole write path for
+  `admin_audit_log` — authenticated users only get `SELECT` on that table, and
+  the function re-checks the caller is `ADMIN`/`MASTER_ADMIN` before writing
+  (Phase 4).
 
 ---
 
