@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,7 +21,7 @@ export default function PracticePage() {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <AppShell role="LEARNER">
+    <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="text-sm text-muted">Question 3 of 15</div>
         <Badge tone="warning">Level 3</Badge>
@@ -50,6 +49,6 @@ export default function PracticePage() {
         </Button>
         <Button disabled={!selected}>Next question</Button>
       </div>
-    </AppShell>
+    </>
   );
 }

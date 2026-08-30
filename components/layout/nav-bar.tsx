@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import type { Role } from "@/lib/types";
+import { signOut } from "@/app/(auth)/login/actions";
 
 const links = [
   { href: "/home", label: "Home" },
@@ -12,10 +13,16 @@ const links = [
 
 interface NavBarProps {
   role?: Role;
+  name?: string;
 }
 
-export function NavBar({ role = "LEARNER" }: NavBarProps) {
-  const visible = role === "MASTER_ADMIN" || role === "ADMIN" ? links : links.filter((l) => l.href !== "/admin");
+export function NavBar({ role = "LEARNER", name }: NavBarProps) {
+  const visible =
+    role === "MASTER_ADMIN" || role === "ADMIN"
+      ? links
+      : links.filter((l) => l.href !== "/admin");
+  const initial = (name?.trim().charAt(0) ?? "?").toUpperCase();
+
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
@@ -35,9 +42,20 @@ export function NavBar({ role = "LEARNER" }: NavBarProps) {
         </nav>
         <div className="ml-auto flex items-center gap-3">
           <Badge tone={role === "LEARNER" ? "neutral" : "primary"}>{role}</Badge>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-2 text-xs font-semibold text-muted">
-            D
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-2 text-xs font-semibold text-muted"
+            title={name}
+          >
+            {initial}
           </div>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="rounded-md px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
+            >
+              Sign out
+            </button>
+          </form>
         </div>
       </div>
     </header>

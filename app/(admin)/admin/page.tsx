@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -25,7 +24,7 @@ const users: {
 
 export default function MasterAdminPage() {
   return (
-    <AppShell role="MASTER_ADMIN">
+    <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Master admin</h1>
@@ -106,6 +105,6 @@ export default function MasterAdminPage() {
           </ul>
         </Card>
       </section>
-    </AppShell>
+    </>
   );
 }

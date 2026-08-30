@@ -112,6 +112,11 @@ the DB layer.
 - `user_preferences.preparation_fields` is `text[]` with a `1..2` count check.
 - `attempt_questions.correct_option_id_snapshot` snapshots the option id at
   attempt time (no FK dependency that could be invalidated later).
+- Signup pre-validation helpers `is_username_taken(text)` and
+  `is_email_taken(text)` (security definer, `search_path` pinned, `EXECUTE`
+  granted to anon + authenticated) expose RLS-safe existence checks so the
+  client can validate username/email availability before creating an account
+  (Phase 3).
 
 ---
 

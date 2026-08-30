@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { OptionsList } from "@/components/practice/options-list";
@@ -31,7 +30,7 @@ export default function TestPage() {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <AppShell role="LEARNER">
+    <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Stepper steps={steps} />
         <TimerPill time="17:42" />
@@ -60,6 +59,6 @@ export default function TestPage() {
           </Button>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

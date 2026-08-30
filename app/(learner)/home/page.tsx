@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -14,7 +13,7 @@ const weakTopics = [
 
 export default function LearnerHomePage() {
   return (
-    <AppShell role="LEARNER">
+    <>
       <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
       <p className="mt-1 text-sm text-muted">
         Pick a field, train your weak topics, then take a timed test to prove
@@ -114,6 +113,6 @@ export default function LearnerHomePage() {
           </ul>
         </Card>
       </section>
-    </AppShell>
+    </>
   );
 }
