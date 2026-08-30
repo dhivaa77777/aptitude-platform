@@ -122,6 +122,20 @@ the DB layer.
   `admin_audit_log` — authenticated users only get `SELECT` on that table, and
   the function re-checks the caller is `ADMIN`/`MASTER_ADMIN` before writing
   (Phase 4).
+- Practice (Phase 5, `20260830160000_practice_rls.sql`) serves MCQ questions
+  only in MVP: `attempt_questions.user_selected_option_id` is a single FK, so
+  multi-select (`MULTI`) answers cannot be stored yet — decision to raise in
+  the Phase 5 PR, with a Phase 6/schema follow-up.
+- `attempt_questions` gained an UPDATE RLS policy `aq_update_own`
+  (`to authenticated`, using/with check the attempt belongs to
+  `auth.uid()`) — previously INSERT/SELECT only (Phase 5).
+- Anti-repetition (Section 5) is implemented with stateless randomization:
+  per-question option display order is derived at render time from a persisted
+  `attempt_questions.option_order_seed` (seeded from attempt + question), so
+  nothing but the seed need be stored and the order is reproducible (rule #2).
+- Answer correctness is judged against the stored
+  `correct_option_id_snapshot` at submit time; `user_question_history` is upserted
+  (PK `user_id, question_id`) whenever a question is served.
 
 ---
 
